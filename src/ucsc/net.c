@@ -37,8 +37,14 @@ time_t header_get_last_modified(CURL *curl) {
 
 long long header_get_content_length(CURL *curl) {
     curl_off_t content_length;
-    CURLcode status = curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
-                                        &content_length);
+
+    #if LIBCURL_VERSION_NUM >= 0x073700
+        #define FILELENGTH CURLINFO_CONTENT_LENGTH_DOWNLOAD_T
+    #else
+        #define FILELENGTH CURLINFO_CONTENT_LENGTH_DOWNLOAD
+    #endif
+
+    CURLcode status = curl_easy_getinfo(curl, FILELENGTH, &content_length);
 
     // could not retrieve length
     if (content_length == -1)
@@ -160,7 +166,13 @@ int netUrlOpenSockets(char *url, int *retCtrlSocket) {
         } else if (startsWith("ftp://", url)) {
             curl_socket_t ctrlSocket;
             CURLcode status = wrapped_curl_request(curl, GET);
-            curl_easy_getinfo(curl, CURLINFO_ACTIVESOCKET, &ctrlSocket);
+            #if LIBCURL_VERSION_NUM >= 0x072d00
+                #define THISSOCKET CURLINFO_ACTIVESOCKET
+            #else
+                #define THISSOCKET CURLINFO_LASTSOCKET
+            #endif
+
+            curl_easy_getinfo(curl, THISSOCKET, &ctrlSocket);
 
             if (retCtrlSocket != NULL)
                 *retCtrlSocket = ctrlSocket;
@@ -201,7 +213,12 @@ boolean netSkipHttpHeaderLinesHandlingRedirect(int sd, char *url, int *redirecte
     wrapped_curl_request(curl, GET);
 
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effectiveUrl);
-    curl_easy_getinfo(curl, CURLINFO_ACTIVESOCKET, &nsd);
+    #if LIBCURL_VERSION_NUM >= 0x072d00
+        #define THISSOCKET CURLINFO_ACTIVESOCKET
+    #else
+        #define THISSOCKET CURLINFO_LASTSOCKET
+    #endif
+    curl_easy_getinfo(curl, THISSOCKET, &nsd);
     if (sd != nsd) {
         close(sd);
         *redirectedSd = nsd;
