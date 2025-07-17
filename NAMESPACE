@@ -6,6 +6,10 @@ useDynLib(rtracklayer, .registration = TRUE)
 
 import(methods)
 import(BiocGenerics)
+import(S7)
+export(ResourceBase)
+S3method(.DollarNames, rtracklayer::ResourceBase)
+S3method(`$`, rtracklayer::ResourceBase)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### base packages

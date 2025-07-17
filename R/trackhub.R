@@ -6,6 +6,41 @@
 ### TrackContainer class
 ###
 
+ResourceBase = new_class(
+    "ResourceBase",
+    properties = list(
+        uri = class_character,
+        filename = class_character,
+        elements = class_list
+    )
+)
+
+method(`[[`, ResourceBase) <- function(x, i) {
+    x@elements[[i]]
+}
+
+method(`[[<-`, ResourceBase) <- function(x, i, value) {
+    x@elements[[i]] <- value
+    x
+}
+
+method(`c`, ResourceBase) <- function(x, ...) {
+    x@elements <- c(x@elements, ...)
+    x
+}
+
+method(`names`, ResourceBase) <- function(x) {
+    names(x@elements)
+}
+
+`.DollarNames.rtracklayer::ResourceBase` <- function(x, pattern = "") {
+    utils::findMatches(pattern, names(x))
+}
+
+`$.rtracklayer::ResourceBase` <- function(x, name) {
+    x@elements[[name]]
+}
+
 setClass("TrackContainer",
          representation("SimpleList"),
          prototype(elementType = "Track")
